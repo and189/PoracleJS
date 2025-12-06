@@ -25,6 +25,23 @@ function calculateLocationRestrictions(config, communityMembership) {
 }
 
 /**
+ * Check if an area name matches a pattern (supports wildcards like _*)
+ * @param areaName
+ * @param pattern
+ * @returns {boolean}
+ */
+function matchesPattern(areaName, pattern) {
+	// If pattern contains *, treat it as a wildcard
+	if (pattern.includes('*')) {
+		const regexPattern = pattern.replace(/\*/g, '.*')
+		const regex = new RegExp(`^${regexPattern}$`, 'i')
+		return regex.test(areaName)
+	}
+	// Otherwise, exact match
+	return areaName.toLowerCase() === pattern.toLowerCase()
+}
+
+/**
  * Filter area list based on community membership
  * @param config
  * @param communityMembership
@@ -46,7 +63,10 @@ function filterAreas(config, communityMembership, areas) {
 		}
 	}
 
-	return areas.filter((x) => allowedAreas.includes(x))
+	// Filter areas using pattern matching (supports wildcards)
+	return areas.filter((areaName) => {
+		return allowedAreas.some((pattern) => matchesPattern(areaName, pattern))
+	})
 }
 
 /**
